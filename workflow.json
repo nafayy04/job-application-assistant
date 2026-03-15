@@ -1,0 +1,198 @@
+{
+  "name": "Job Application Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "00d94e0f-4fce-4122-a0dc-c3ff7baded94",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        -112
+      ],
+      "id": "db779b7c-435d-4de0-806d-db30eeabd7bc",
+      "name": "Webhook",
+      "webhookId": "00d94e0f-4fce-4122-a0dc-c3ff7baded94"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search Nafay's CV for skills, experience and background",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "my-cv-index",
+          "mode": "list",
+          "cachedResultName": "my-cv-index"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        32
+      ],
+      "id": "278c4b47-bf8d-4657-b2ae-5009141b127f",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "1ZgL6HJXiBtVsa0J",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.jobDescription }}",
+        "options": {
+          "systemMessage": "You are a job application assistant for Nafay Mohiy ud Din.\n\nWhen given a job description, use the CV tool to retrieve Nafay's background, then respond in EXACTLY this format:\n\nMatch Score: X%\n\nMissing Skills:\n- skill 1\n- skill 2\n- skill 3\n\nCover Letter:\nDear Hiring Manager,\n[write a professional cover letter here based on Nafay's CV and the job description]\n\nDo not add any extra text outside this format. Follow it strictly."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        48,
+        -144
+      ],
+      "id": "7d41c0d0-d0e2-4e52-8067-d268f0004a88",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        48,
+        48
+      ],
+      "id": "5fd713a4-55d2-4058-a661-b574f17f0972",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "63KnerO7lhKK8VZO",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-english-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        352,
+        240
+      ],
+      "id": "b9abd646-f1c2-4bc6-87ca-791829a9f7e6",
+      "name": "Embeddings Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "bjrkrBLlpoT44gyD",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        464,
+        -144
+      ],
+      "id": "ffde8625-06b3-4237-be55-e3a9a10b08e2",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1cd94edb-61bc-427b-959d-27b8a8aa2238",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b356c85420e084b3f442b20df5845219177425bc61973820bc3634efa0437052"
+  },
+  "id": "Cnll8ZGOPUhgdUrh",
+  "tags": []
+}
