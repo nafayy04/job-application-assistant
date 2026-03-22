@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import re
 
-WEBHOOK_URL = "http://localhost:5678/webhook/00d94e0f-4fce-4122-a0dc-c3ff7baded94"
+WEBHOOK_URL = "your-n8n-webhook-url-here"
 
 st.set_page_config(page_title="Job Application Assistant", page_icon="💼", layout="centered")
 
